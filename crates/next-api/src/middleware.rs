@@ -333,7 +333,7 @@ impl Endpoint for MiddlewareEndpoint {
     async fn entries(self: Vc<Self>) -> Result<Vc<GraphEntries>> {
         Ok(Vc::cell(vec![(
             vec![self.entry_module().to_resolved().await?],
-            ChunkGroupType::Evaluated,
+            Some(ChunkGroupType::Evaluated),
         )]))
     }
 }

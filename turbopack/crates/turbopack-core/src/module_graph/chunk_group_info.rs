@@ -436,16 +436,19 @@ pub async fn compute_chunk_group_info(graph: &ModuleGraph) -> Result<Vc<ChunkGro
             .iter()
             .flat_map(|g| g.entries.iter())
             .flat_map(|(entries, ty)| {
-                entries.iter().map(|e| {
-                    (
-                        *e,
-                        ChunkGroupKey::Entry {
-                            entries: entries.clone(),
-                            ty: *ty,
-                        },
-                    )
+                ty.as_ref().map(|ty| {
+                    entries.iter().map(|e| {
+                        (
+                            *e,
+                            ChunkGroupKey::Entry {
+                                entries: entries.clone(),
+                                ty: *ty,
+                            },
+                        )
+                    })
                 })
             })
+            .flatten()
             .collect::<FxHashMap<_, _>>();
 
         let mut visitor =
