@@ -1,13 +1,10 @@
 use anyhow::Result;
 use tracing::Instrument;
 use turbo_rcstr::RcStr;
-use turbo_tasks::{
-    primitives::HashableHashSet, FxIndexMap, ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, Value,
-    ValueToString, Vc,
-};
+use turbo_tasks::{FxIndexMap, ResolvedVc, Value, ValueToString, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
-    chunk::{availability_info::AvailabilityInfo, ChunkGroupType, ChunkingContext},
+    chunk::{availability_info::AvailabilityInfo, ChunkingContext},
     ident::AssetIdent,
     module::Module,
     module_graph::{chunk_group_info::ChunkGroup, ModuleGraph},
