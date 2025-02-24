@@ -124,6 +124,7 @@ pub async fn get_app_route_entry(
         pathname,
         original_name,
         rsc_entry: rsc_entry.to_resolved().await?,
+        rsc_edge_inner: None,
         config: config.to_resolved().await?,
     }
     .cell())

@@ -53,8 +53,8 @@ use turbopack::{
 use turbopack_core::{
     asset::AssetContent,
     chunk::{
-        availability_info::AvailabilityInfo, ChunkGroupType, ChunkingContext, ChunkingContextExt,
-        EvaluatableAsset, EvaluatableAssets,
+        availability_info::AvailabilityInfo, ChunkGroupResult, ChunkGroupType, ChunkingContext,
+        ChunkingContextExt, EvaluatableAsset, EvaluatableAssets,
     },
     file_source::FileSource,
     ident::AssetIdent,
@@ -1196,7 +1196,14 @@ impl AppEndpoint {
             client_chunking_context,
             Value::new(client_shared_availability_info),
             ssr_chunking_context,
-            *rsc_entry,
+            if let Some(rsc_edge_inner) = app_entry.rsc_edge_inner {
+                ChunkGroup::Async(rsc_edge_inner)
+            } else {
+                ChunkGroup::Entry {
+                    entries: [app_entry.rsc_entry].into_iter().collect(),
+                    ty: ChunkGroupType::Entry,
+                }
+            },
             project.project_path(),
         );
         let client_references_chunks_ref = client_references_chunks.await?;
