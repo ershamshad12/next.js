@@ -1,7 +1,7 @@
 use anyhow::Result;
 use tracing::Instrument;
 use turbo_rcstr::RcStr;
-use turbo_tasks::{FxIndexMap, ResolvedVc, Value, ValueToString, Vc};
+use turbo_tasks::{FxIndexMap, ResolvedVc, TryJoinIterExt, Value, ValueToString, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
     chunk::{availability_info::AvailabilityInfo, ChunkingContext},
@@ -54,7 +54,7 @@ pub async fn get_app_client_references_chunks(
     client_chunking_context: Vc<Box<dyn ChunkingContext>>,
     client_availability_info: Value<AvailabilityInfo>,
     ssr_chunking_context: Option<Vc<Box<dyn ChunkingContext>>>,
-    page_chunk_group: ChunkGroup,
+    entry_chunk_group: ChunkGroup,
     project_path: Vc<FileSystemPath>,
 ) -> Result<Vc<ClientReferencesChunks>> {
     async move {
@@ -182,10 +182,14 @@ pub async fn get_app_client_references_chunks(
 
             let server_utils_chunk_group = chunk_group_info
                 .get_merged_group(
-                    page_chunk_group.clone(),
+                    entry_chunk_group.clone(),
                     NEXT_SERVER_UTILITY_MERGE_TAG.clone(),
                 )
-                .await?;
+                .owned()
+                .await?
+                // Some entypoints have server utilites that aren't marked as such, fall back to
+                // page chunk group in that case.
+                .unwrap_or(entry_chunk_group);
 
             for (server_component, client_reference_types) in
                 client_references_by_server_component.into_iter()
@@ -198,7 +202,7 @@ pub async fn get_app_client_references_chunks(
                 let parent_chunk_group = if let Some(server_component) = server_component {
                     ChunkGroup::Shared(ResolvedVc::upcast(server_component.await?.module))
                 } else {
-                    server_utils_chunk_group.as_ref().unwrap().clone()
+                    server_utils_chunk_group.clone()
                 };
 
                 let client_chunk_group = chunk_group_info
