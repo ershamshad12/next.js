@@ -79,7 +79,7 @@ pub async fn make_chunk_group(
     let current_chunk_group_idx = *module_graph
         .chunk_group_info()
         .get_index_of(chunk_group)
-        .await? as u32;
+        .await?;
     let availability_info = availability_info
         .with_modules(current_chunk_group_idx)
         .await?;

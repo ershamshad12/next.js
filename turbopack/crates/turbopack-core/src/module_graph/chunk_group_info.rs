@@ -167,7 +167,7 @@ pub enum ChunkGroup {
     Isolated(ResolvedVc<Box<dyn Module>>),
     /// a module with an incoming merging isolated edge
     IsolatedMerged {
-        parent: usize,
+        parent: u32,
         merge_tag: RcStr,
         entries: HashableHashSet<ResolvedVc<Box<dyn Module>>>,
     },
@@ -175,7 +175,7 @@ pub enum ChunkGroup {
     Shared(ResolvedVc<Box<dyn Module>>),
     /// a module with an incoming merging shared edge
     SharedMerged {
-        parent: usize,
+        parent: u32,
         merge_tag: RcStr,
         entries: HashableHashSet<ResolvedVc<Box<dyn Module>>>,
     },
@@ -205,7 +205,8 @@ impl ChunkGroup {
                 entries,
             } => {
                 core::mem::discriminant(self).hash(hasher);
-                chunk_group_info.chunk_groups[*parent].hash_chunk_groups(hasher, chunk_group_info);
+                chunk_group_info.chunk_groups[*parent as usize]
+                    .hash_chunk_groups(hasher, chunk_group_info);
                 merge_tag.hash(hasher);
                 entries.hash(hasher);
             }
@@ -215,7 +216,8 @@ impl ChunkGroup {
                 entries,
             } => {
                 core::mem::discriminant(self).hash(hasher);
-                chunk_group_info.chunk_groups[*parent].hash_chunk_groups(hasher, chunk_group_info);
+                chunk_group_info.chunk_groups[*parent as usize]
+                    .hash_chunk_groups(hasher, chunk_group_info);
                 merge_tag.hash(hasher);
                 entries.hash(hasher);
             }
@@ -252,8 +254,10 @@ impl ChunkGroup {
             } => {
                 format!(
                     "ChunkGroup::IsolatedMerged({}, {}, {:?})",
-                    Box::pin(chunk_group_info.chunk_groups[*parent].debug_str(chunk_group_info))
-                        .await?,
+                    Box::pin(
+                        chunk_group_info.chunk_groups[*parent as usize].debug_str(chunk_group_info)
+                    )
+                    .await?,
                     merge_tag,
                     entries
                         .iter()
@@ -269,8 +273,10 @@ impl ChunkGroup {
             } => {
                 format!(
                     "ChunkGroup::SharedMerged({}, {}, {:?})",
-                    Box::pin(chunk_group_info.chunk_groups[*parent].debug_str(chunk_group_info))
-                        .await?,
+                    Box::pin(
+                        chunk_group_info.chunk_groups[*parent as usize].debug_str(chunk_group_info)
+                    )
+                    .await?,
                     merge_tag,
                     entries
                         .iter()
@@ -672,7 +678,7 @@ pub async fn compute_chunk_group_info(graph: &ModuleGraph) -> Result<Vc<ChunkGro
                         ChunkGroupId(chunk_groups.len() as u32),
                     );
                     ChunkGroup::IsolatedMerged {
-                        parent: parent.0 as usize,
+                        parent: parent.0,
                         merge_tag,
                         entries: merged_entries.into_iter().collect(),
                     }
@@ -684,7 +690,7 @@ pub async fn compute_chunk_group_info(graph: &ModuleGraph) -> Result<Vc<ChunkGro
                         ChunkGroupId(chunk_groups.len() as u32),
                     );
                     ChunkGroup::SharedMerged {
-                        parent: parent.0 as usize,
+                        parent: parent.0,
                         merge_tag,
                         entries: merged_entries.into_iter().collect(),
                     }
