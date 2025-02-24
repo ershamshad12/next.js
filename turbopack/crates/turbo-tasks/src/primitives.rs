@@ -9,9 +9,9 @@ use rustc_hash::{FxHashSet, FxHasher};
 use serde::{Deserialize, Serialize};
 use turbo_rcstr::RcStr;
 // This specific macro identifier is detected by turbo-tasks-build.
-use turbo_tasks_macros::primitive as __turbo_tasks_internal_primitive;
+use turbo_tasks_macros::{primitive as __turbo_tasks_internal_primitive, TraceRawVcs};
 
-use crate::{self as turbo_tasks, TaskInput, Vc};
+use crate::{self as turbo_tasks, NonLocalValue, TaskInput, Vc};
 
 __turbo_tasks_internal_primitive!(());
 __turbo_tasks_internal_primitive!(String, manual_shrink_to_fit);
@@ -63,7 +63,7 @@ impl PartialEq for Regex {
 }
 impl Eq for Regex {}
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, TraceRawVcs)]
 #[serde(bound(
     deserialize = "T: Hash + Eq + Deserialize<'de>",
     serialize = "T: Hash + Eq + Serialize"
@@ -122,3 +122,5 @@ where
         Ok(resolved.into())
     }
 }
+
+unsafe impl<T: NonLocalValue + Hash + Eq> NonLocalValue for HashableHashSet<T> {}
