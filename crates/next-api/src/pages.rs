@@ -1472,7 +1472,10 @@ impl Endpoint for PageEndpoint {
         let ssr_chunk_module = self.internal_ssr_chunk_module().await?;
         modules.push((
             vec![ssr_chunk_module.ssr_module],
-            Some(ChunkGroupType::Entry),
+            Some(match ssr_chunk_module.runtime {
+                NextRuntime::NodeJs => ChunkGroupType::Entry,
+                NextRuntime::Edge => ChunkGroupType::Evaluated,
+            }),
         ));
 
         if let PageEndpointType::Html = this.ty {
